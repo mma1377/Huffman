@@ -4,8 +4,12 @@ void Decoder::DecodeSimpleCoded(std::string fileName, std::string outFileName)
 {
 	std::ifstream input;
 	input.open(fileName, std::ios_base::in | std::ios_base::binary);
+
+	std::string fileExtension;
+	input >> fileExtension;
+
 	std::ofstream output;
-	output.open(outFileName, std::ios_base::out | std::ios_base::binary);
+	output.open(outFileName + fileExtension, std::ios_base::out | std::ios_base::binary);
 
 	char c;
 

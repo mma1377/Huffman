@@ -140,10 +140,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BinaryTreeNode.h" />
+    <ClInclude Include="Decoder.h" />
+    <ClInclude Include="Encoder.h" />
     <ClInclude Include="Symbol.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BinaryTreeNode.cpp" />
+    <ClCompile Include="Decoder.cpp" />
+    <ClCompile Include="Encoder.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Symbol.cpp" />
   </ItemGroup>

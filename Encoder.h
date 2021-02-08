@@ -14,6 +14,7 @@ private:
 	std::vector<BinaryTree::Node*> _leafsNodes;
 	std::vector<BinaryTree::Node*> _internalNodes;
 	std::string _rawData;
+	std::string _fileExtension;
 public:
 	Encoder(std::string fileName, char version);
 	void CalcualteCodewords();

@@ -1,7 +1,15 @@
 #include "Encoder.h"
+#include <iostream>;
 
 Encoder::Encoder(std::string fileName, char version)
 {
+	int dotIndex = 0;
+	for (int i = fileName.length() - 1; i >= 0; --i) {
+		if (fileName[i] == '.')
+			dotIndex = i;
+	}
+	_fileExtension = fileName.substr(dotIndex, fileName.length() - dotIndex);
+
 	_version = version;
 	std::ifstream input;
 	input.open(fileName, std::ios_base::in | std::ios_base::binary);
@@ -80,6 +88,7 @@ void Encoder::Encode(std::string fileName)
 	output.open(fileName, std::ios_base::out | std::ios_base::binary);
 	unsigned char buffer = 0;
 	int bitCounter = 0;
+	output << _fileExtension << " ";
 	for (auto it = _symbols.begin(); it != _symbols.end(); ++it)
 		output << it->second->Code() << " -" << (char)it->second->AsciiCode() << " ";
 	output << "endList ";
