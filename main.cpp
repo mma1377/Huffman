@@ -30,10 +30,31 @@ void decode() {
 
 	std::cout << "Enter file name:\n";
 	std::cin >> inputFileName;
+	char e1 = inputFileName[inputFileName.length() - 3];
+	char e2 = inputFileName[inputFileName.length() - 2];
+	char e3 = inputFileName[inputFileName.length() - 1];
+	std::string extention = "";
+	extention += e1;
+	extention += e2;
+	extention += e3;
+	while (extention != "sha" && extention != "eha") {
+		std::cout << "File format is invalid. Enter valid file name:\n";
+		std::cin >> inputFileName;
+		e1 = inputFileName[inputFileName.length() - 3];
+		e2 = inputFileName[inputFileName.length() - 2];
+		e3 = inputFileName[inputFileName.length() - 1];
+		extention = "";
+		extention += e1;
+		extention += e2;
+		extention += e3;
+	}
 	std::cout << "Enter ouput file name without extension:\n";
 	std::cin >> outputFileName;
 	std::cout << "Decoding...\n";
-	Decoder::DecodeSimpleCoded(inputFileName, outputFileName);
+	if (extention == "sha")
+		Decoder::DecodeSimpleCoded(inputFileName, outputFileName);
+	else if (extention == "eha")
+		Decoder::DecodeExtendedCoded(inputFileName, outputFileName);
 }
 
 int main() {

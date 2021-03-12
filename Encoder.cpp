@@ -15,29 +15,61 @@ Encoder::Encoder(std::string fileName, char version)
 	input.open(fileName, std::ios_base::in | std::ios_base::binary);
 
 	char c;
+	char c2;
 
-	_rawData = "";
-	while (input.get(c)) {
-		int symbolAscii = int(c);
-		_rawData += c;
-		auto currentSymbol = _symbols.find(symbolAscii);
-		if (currentSymbol == _symbols.end()) {
-			auto newSymbol = std::pair<int, Symbol*>(symbolAscii, new Symbol(symbolAscii));
-			newSymbol.second->IncrementFrequency();
-			_symbols.insert(newSymbol);
+	if (_version == 's') {
+		_rawData = "";
+		while (input.get(c)) {
+			int symbolAscii = int(c);
+			_rawData += c;
+			auto currentSymbol = _symbols.find(symbolAscii);
+			if (currentSymbol == _symbols.end()) {
+				auto newSymbol = std::pair<int, Symbol*>(symbolAscii, new Symbol(symbolAscii));
+				newSymbol.second->IncrementFrequency();
+				_symbols.insert(newSymbol);
+			}
+			else
+				currentSymbol->second->IncrementFrequency();
 		}
-		else
-			currentSymbol->second->IncrementFrequency();
-	}
-	input.close();
+		input.close();
 
-	for (auto it = _symbols.begin(); it != _symbols.end(); ++it)
-		_leafsNodes.push_back(it->second->Leaf());
-	std::sort(_leafsNodes.begin(), _leafsNodes.end(),
-		[](BinaryTree::Node* a, BinaryTree::Node* b) -> bool
-		{
-			return a->Rank() < b->Rank();
-		});
+		for (auto it = _symbols.begin(); it != _symbols.end(); ++it)
+			_leafsNodes.push_back(it->second->Leaf());
+		std::sort(_leafsNodes.begin(), _leafsNodes.end(),
+			[](BinaryTree::Node* a, BinaryTree::Node* b) -> bool
+			{
+				return a->Rank() < b->Rank();
+			});
+	}
+	else {
+		_rawData = "";
+		while (input.get(c)) {
+			_rawData += c;
+			if (!input.get(c2)) {
+				c2 = (char)'\0';
+			}
+			_rawData += c2;
+			auto symbolsAscii = std::make_pair((int)c, (int)c2);
+			auto currentSymbol = _symbols2Char.find(symbolsAscii);
+			if (currentSymbol == _symbols2Char.end()) {
+				auto newSymbol = std::pair<std::pair<int, int>, Symbol2Char*>(symbolsAscii, new Symbol2Char((int)c, (int)c2));
+				newSymbol.second->IncrementFrequency();
+				_symbols2Char.insert(newSymbol);
+			}
+			else
+				currentSymbol->second->IncrementFrequency();
+
+		}
+		input.close();
+
+		for (auto it = _symbols2Char.begin(); it != _symbols2Char.end(); ++it)
+			_leafsNodes.push_back(it->second->Leaf());
+		std::sort(_leafsNodes.begin(), _leafsNodes.end(),
+			[](BinaryTree::Node* a, BinaryTree::Node* b) -> bool
+			{
+				return a->Rank() < b->Rank();
+			});
+	}
 }
 
 void Encoder::CalcualteCodewords()
@@ -78,8 +110,14 @@ void Encoder::CalcualteCodewords()
 			root = firstNode;
 		}
 	}
-	for (auto it = _symbols.begin(); it != _symbols.end(); ++it)
-		it->second->CreateCode();
+	if (_version == 's') {
+		for (auto it = _symbols.begin(); it != _symbols.end(); ++it)
+			it->second->CreateCode();
+	}
+	else {
+		for (auto it = _symbols2Char.begin(); it != _symbols2Char.end(); ++it)
+			it->second->CreateCode();
+	}
 }
 
 void Encoder::Encode(std::string fileName)
@@ -89,11 +127,27 @@ void Encoder::Encode(std::string fileName)
 	unsigned char buffer = 0;
 	int bitCounter = 0;
 	output << _fileExtension << " ";
-	for (auto it = _symbols.begin(); it != _symbols.end(); ++it)
-		output << it->second->Code() << " -" << (char)it->second->AsciiCode() << " ";
+	if (_version == 's'){
+		for (auto it = _symbols.begin(); it != _symbols.end(); ++it)
+			output << it->second->Code() << " -" << (char)it->second->AsciiCode() << " ";
+	}
+	else {
+		for (auto it = _symbols2Char.begin(); it != _symbols2Char.end(); ++it)
+			output << it->second->Code() << " -" << it->second->StringCode() << " ";
+	}
+
 	output << "endList ";
-	for (int i = 0; i < _rawData.length(); ++i) {
-		std::string code = _symbols[(int)_rawData[i]]->Code();
+	int i = 0;
+	for (i; i < _rawData.length(); ++i) {
+		std::string code;
+		if (_version == 's') {
+			code = _symbols[(int)_rawData[i]]->Code();
+		}
+		else {
+			auto index = std::make_pair((int)_rawData[i], (int)_rawData[i + 1]);
+			code = _symbols2Char[index]->Code();
+			i++;
+		}
 		for (int j = 0; j < code.length(); ++j) {
 
 			buffer |= (code[j] == '1') << (7 - bitCounter);
